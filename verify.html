@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BGS Fair Trade — Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:       #16a34a;
+      --green-light: #bbf7d0;
+      --green-bg:    #f0fdf4;
+      --red:         #dc2626;
+      --red-light:   #fecaca;
+      --red-bg:      #fef2f2;
+      --amber:       #d97706;
+      --amber-light: #fde68a;
+      --amber-bg:    #fffbeb;
+      --ink:         #0f1923;
+      --ink-2:       #374151;
+      --ink-3:       #6b7280;
+      --ink-4:       #9ca3af;
+      --border:      #e5e7eb;
+      --surface:     #ffffff;
+      --page:        #f4f6f8;
+      --radius:      14px;
+      --shadow:      0 2px 12px rgba(0,0,0,0.07);
+      --shadow-lg:   0 8px 32px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── TOP NAV ──────────────────────────────── */
+    nav {
+      background: var(--ink);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-brand span { color: #4ade80; }
+    .nav-pill {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* ── HERO STATUS ──────────────────────────── */
+    .hero {
+      padding: 36px 20px 28px;
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .status-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    .status-ring.verified   { background: var(--green-bg); box-shadow: 0 0 0 6px var(--green-light); }
+    .status-ring.tampered   { background: var(--red-bg);   box-shadow: 0 0 0 6px var(--red-light); }
+    .status-ring.warning    { background: var(--amber-bg); box-shadow: 0 0 0 6px var(--amber-light); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .status-badge.verified { background: var(--green); color: #fff; }
+    .status-badge.tampered { background: var(--red);   color: #fff; }
+    .status-badge.warning  { background: var(--amber); color: #fff; }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .hero p {
+      font-size: 14px;
+      color: var(--ink-3);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* ── GRID ────────────────────────────────── */
+    .grid {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── CARD ────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: slideUp 0.4s ease both;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .icon-green  { background: var(--green-bg); }
+    .icon-blue   { background: #eff6ff; }
+    .icon-purple { background: #f5f3ff; }
+    .icon-amber  { background: var(--amber-bg); }
+    .icon-red    { background: var(--red-bg); }
+    .icon-slate  { background: #f8fafc; border: 1px solid var(--border); }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--ink-4);
+      margin-top: 1px;
+    }
+    .card-body { padding: 0 20px; }
+
+    /* ── ROW ────────────────────────────────── */
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid #f8fafc;
+      gap: 12px;
+    }
+    .row:last-child { border-bottom: none; }
+    .row-label {
+      font-size: 13px;
+      color: var(--ink-3);
+      flex-shrink: 0;
+    }
+    .row-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      text-align: right;
+      word-break: break-all;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-3);
+    }
+
+    /* ── PRICE BAR ─────────────────────────── */
+    .price-visual {
+      padding: 16px 20px 20px;
+      background: #fafafa;
+      border-top: 1px solid var(--border);
+    }
+    .price-bar-wrap {
+      position: relative;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      margin: 10px 0 6px;
+      overflow: visible;
+    }
+    .price-bar-range {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, #fde68a, #bbf7d0);
+      border-radius: 4px;
+    }
+    .price-bar-offered {
+      position: absolute;
+      top: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--ink);
+      transform: translateX(-50%);
+    }
+    .price-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-4);
+    }
+    .price-highlights {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .ph-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .ph-label { font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .ph-value { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+    .ph-value.positive { color: var(--green); }
+    .ph-value.negative { color: var(--red); }
+    .ph-value.neutral  { color: var(--amber); }
+
+    /* ── FRAUD METER ───────────────────────── */
+    .fraud-meter-wrap {
+      padding: 16px 20px 20px;
+      background: #fafafa;
+      border-top: 1px solid var(--border);
+    }
+    .fraud-meter-bar {
+      height: 10px;
+      border-radius: 5px;
+      background: var(--border);
+      overflow: hidden;
+      margin: 8px 0 4px;
+    }
+    .fraud-meter-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 1s ease;
+    }
+    .fraud-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-4); }
+    .fraud-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+
+    /* ── GROUP FARMERS ─────────────────────── */
+    .farmer-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 14px 20px;
+    }
+    .farmer-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--ink-2);
+    }
+    .farmer-chip-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    /* ── BLOCKCHAIN ────────────────────────── */
+    .hash-box {
+      background: var(--ink);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 14px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .hash-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .hash-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; letter-spacing: 0.5px; }
+    .hash-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #4ade80;
+      word-break: break-all;
+      line-height: 1.7;
+    }
+    .chain-link-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      border-bottom: 1px solid #f8fafc;
+    }
+    .chain-link-row:last-child { border-bottom: none; }
+    .block-num {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .chain-link-info { flex: 1; min-width: 0; }
+    .chain-link-tx { font-size: 11px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chain-link-hash { font-size: 10px; color: var(--ink-4); font-family: 'JetBrains Mono', monospace; }
+    .chain-link-status { font-size: 13px; flex-shrink: 0; }
+
+    /* ── DECISION BANNER ───────────────────── */
+    .decision-banner {
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.4s ease both;
+    }
+    .decision-emoji { font-size: 36px; flex-shrink: 0; }
+    .decision-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+    .decision-sub   { font-size: 13px; opacity: 0.8; }
+
+    /* ── ACTION PILLS ──────────────────────── */
+    .action-list { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .action-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .action-text { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+    .action-action { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 0.5px; margin-bottom: 2px; }
+
+    /* ── TAMPER NOTE ───────────────────────── */
+    .tamper-note {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-light);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #78350f;
+      line-height: 1.5;
+      margin: 0 20px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── FOOTER ────────────────────────────── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--ink-4);
+      padding: 0 20px 40px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .footer strong { color: var(--ink-3); }
+
+    /* ── LOADING ───────────────────────────── */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      color: var(--ink-3);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #content { display: none; }
+
+    /* ── ERROR ─────────────────────────────── */
+    #error-state {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    #error-state h2 { font-family: 'Syne', sans-serif; font-size: 20px; margin-bottom: 8px; }
+    #error-state p  { color: var(--ink-3); font-size: 14px; }
+
+    @media (max-width: 480px) {
+      .price-highlights { grid-template-columns: 1fr 1fr; }
+      .hero h1 { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🌾 BGS <span>FairTrade</span></div>
+  <div class="nav-pill">Blockchain Verified</div>
+</nav>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <span>Fetching verification data…</span>
+</div>
+
+<div id="error-state">
+  <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+  <h2>Verification Failed</h2>
+  <p id="error-msg">Could not load transaction data. Please check the URL and try again.</p>
+</div>
+
+<div id="content">
+  <!-- Hero -->
+  <div class="hero">
+    <div id="status-ring" class="status-ring"></div>
+    <div id="status-badge" class="status-badge"></div>
+    <h1 id="status-title"></h1>
+    <p id="status-sub"></p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Decision Banner -->
+    <div id="decision-banner" class="decision-banner"></div>
+
+    <!-- Trade Details -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-green">🌾</div>
+        <div>
+          <div class="card-title">Trade Details</div>
+          <div class="card-subtitle" id="trade-tx-sub"></div>
+        </div>
+      </div>
+      <div class="card-body" id="trade-body"></div>
+    </div>
+
+    <!-- Price Analysis -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-blue">💰</div>
+        <div>
+          <div class="card-title">Price Analysis</div>
+          <div class="card-subtitle" id="price-sub"></div>
+        </div>
+      </div>
+      <div class="card-body" id="price-body"></div>
+      <div class="price-visual" id="price-visual"></div>
+    </div>
+
+    <!-- Buyer Info -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-purple">🏪</div>
+        <div>
+          <div class="card-title">Buyer Profile</div>
+          <div class="card-subtitle" id="buyer-sub"></div>
+        </div>
+      </div>
+      <div class="card-body" id="buyer-body"></div>
+    </div>
+
+    <!-- Fraud Detection -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-amber">🔍</div>
+        <div>
+          <div class="card-title">Fraud Detection</div>
+          <div class="card-subtitle" id="fraud-sub"></div>
+        </div>
+      </div>
+      <div class="card-body" id="fraud-body"></div>
+      <div class="fraud-meter-wrap" id="fraud-meter"></div>
+    </div>
+
+    <!-- Group Negotiation -->
+    <div class="card" id="group-card">
+      <div class="card-header">
+        <div class="card-icon icon-green">👥</div>
+        <div>
+          <div class="card-title">Group Negotiation</div>
+          <div class="card-subtitle" id="group-sub"></div>
+        </div>
+      </div>
+      <div id="group-body"></div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="card" id="action-card" style="display:none">
+      <div class="card-header">
+        <div class="card-icon icon-amber">📋</div>
+        <div>
+          <div class="card-title">Recommended Actions</div>
+          <div class="card-subtitle">Steps to get a better deal</div>
+        </div>
+      </div>
+      <div class="action-list" id="action-list"></div>
+    </div>
+
+    <!-- Blockchain Certificate -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-slate">🔗</div>
+        <div>
+          <div class="card-title">Blockchain Certificate</div>
+          <div class="card-subtitle" id="chain-sub"></div>
+        </div>
+      </div>
+      <div class="card-body" id="chain-body"></div>
+      <div id="chain-hash-box"></div>
+      <div class="card-body" id="chain-links" style="padding-bottom:4px"></div>
+      <div class="tamper-note" id="tamper-note" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="footer"></div>
+</div>
+
+<script>
+// ── Helpers ────────────────────────────────────────────────
+const q = sel => document.querySelector(sel);
+
+function row(label, value, mono = false) {
+  return `<div class="row">
+    <span class="row-label">${label}</span>
+    <span class="row-value ${mono ? 'mono' : ''}">${value}</span>
+  </div>`;
+}
+
+function fmtDate(ts) {
+  try {
+    return new Date(ts).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) + ' IST';
+  } catch { return ts; }
+}
+
+function riskColor(level) {
+  const map = {
+    HIGH_RISK_BUYER: 'var(--red)',
+    MODERATE_RISK_BUYER: 'var(--amber)',
+    TRUSTED_BUYER: 'var(--green)',
+    UNKNOWN_BUYER: 'var(--ink-3)',
+  };
+  return map[level] || 'var(--ink-3)';
+}
+
+function priceStatusColor(status) {
+  const map = {
+    PREMIUM_PRICE:       'var(--green)',
+    ABOVE_FAIR:          'var(--green)',
+    FAIR_PRICE:          'var(--green)',
+    SLIGHTLY_BELOW_FAIR: 'var(--amber)',
+    UNDERPRICED:         'var(--red)',
+    SEVERELY_UNDERPRICED:'var(--red)',
+  };
+  return map[status] || 'var(--ink-3)';
+}
+
+function decisionColors(decision) {
+  const map = {
+    ACCEPT:                     { bg: '#f0fdf4', border: '#bbf7d0', text: '#14532d' },
+    NEGOTIATE_BEFORE_ACCEPTING: { bg: '#fffbeb', border: '#fde68a', text: '#78350f' },
+    REJECT_WITH_ALTERNATIVES:   { bg: '#fff7ed', border: '#fed7aa', text: '#7c2d12' },
+    STRONGLY_REJECT:            { bg: '#fef2f2', border: '#fecaca', text: '#7f1d1d' },
+  };
+  return map[decision] || { bg: '#f8fafc', border: '#e2e8f0', text: '#0f1923' };
+}
+
+// ── Fetch & render ──────────────────────────────────────────
+async function load() {
+  const params = new URLSearchParams(window.location.search);
+  const hash   = params.get('hash');
+  const tx     = params.get('tx');
+
+  if (!hash && !tx) {
+    showError('Missing hash or tx in URL. Scan the QR code again.');
+    return;
+  }
+
+  // Build verify URL — same domain as this page, or hardcoded n8n webhook
+  // Replace with your actual n8n verify webhook after deploying:
+  const N8N_VERIFY_URL = 'https://maya143.app.n8n.cloud/webhook/bgs/verify';
+  const url = `${N8N_VERIFY_URL}?hash=${encodeURIComponent(hash||'')}&tx=${encodeURIComponent(tx||'')}`;
+
+  let data;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (e) {
+    showError(`Could not reach verification server: ${e.message}`);
+    return;
+  }
+
+  // The n8n Verification Response Builder returns the top-level object.
+  // Support both direct verification response AND the main workflow response.
+  render(data);
+}
+
+function render(data) {
+  q('#loading').style.display = 'none';
+  q('#content').style.display = 'block';
+
+  // ── Determine if this is a verify response or trade response ──
+  const isVerify = 'verified' in data && 'display_card' in data;
+  const isTrade  = data.success && data.farmer_card;
+
+  if (isVerify) {
+    renderVerification(data);
+  } else if (isTrade) {
+    renderTrade(data);
+  } else {
+    showError('Unexpected data format from server.');
+  }
+}
+
+// ── Render Verification (QR scan result) ───────────────────
+function renderVerification(data) {
+  const v    = data;
+  const card = v.display_card;
+  const tx   = card.trade_details.reduce((acc, r) => { acc[r.label] = r.value; return acc; }, {});
+  const bc   = card.blockchain_details.reduce((acc, r) => { acc[r.label] = r.value; return acc; }, {});
+  const tech = v.technical;
+
+  const isOK = v.verified;
+
+  // Hero
+  const ring = q('#status-ring');
+  ring.textContent = isOK ? '✅' : '⚠️';
+  ring.className = `status-ring ${isOK ? 'verified' : 'tampered'}`;
+
+  const badge = q('#status-badge');
+  badge.textContent = v.status;
+  badge.className = `status-badge ${isOK ? 'verified' : 'tampered'}`;
+
+  q('#status-title').textContent = isOK
+    ? 'This trade is verified & tamper-proof'
+    : 'Chain integrity warning detected';
+  q('#status-sub').textContent = v.message;
+
+  // Decision banner (using fairness)
+  const fairness = tx['Price Fairness'] || '';
+  const isFair = fairness.includes('FAIR') || fairness.includes('PREMIUM') || fairness.includes('ABOVE');
+  const dc = decisionColors(isFair ? 'ACCEPT' : 'NEGOTIATE_BEFORE_ACCEPTING');
+  q('#decision-banner').style.cssText = `background:${dc.bg};border:1px solid ${dc.border};color:${dc.text}`;
+  q('#decision-banner').innerHTML = `
+    <div class="decision-emoji">${isOK ? '🔒' : '🔓'}</div>
+    <div>
+      <div class="decision-title">${isOK ? 'Blockchain Verified' : 'Integrity Warning'}</div>
+      <div class="decision-sub">Block #${card.block_number} · ${fmtDate(card.timestamp)}</div>
+    </div>`;
+
+  // Trade body
+  q('#trade-tx-sub').textContent = card.transaction_id;
+  q('#trade-body').innerHTML =
+    row('Transaction ID', `<span class="mono">${card.transaction_id}</span>`) +
+    row('Farmer ID',  tx['Farmer ID']  || '—') +
+    row('Buyer ID',   tx['Buyer ID']   || '—') +
+    row('Crop',       `<span style="text-transform:capitalize">${tx['Crop'] || '—'}</span>`) +
+    row('Date & Time', fmtDate(card.timestamp));
+
+  // Price
+  const offP = parseFloat((tx['Offered Price']||'').replace('₹','').replace('/kg','')) || 0;
+  const fairP = parseFloat((tx['Fair Market Price']||'').replace('₹','').replace('/kg','')) || 0;
+  const dev   = tx['Price Deviation'] || '—';
+  const pFair = tx['Price Fairness'] || '—';
+  const pColor = priceStatusColor(pFair.replace(/[^A-Z_]/g,''));
+
+  q('#price-sub').textContent = `Offered ${tx['Offered Price']} vs Fair ${tx['Fair Market Price']}`;
+  q('#price-body').innerHTML =
+    row('Offered Price', tx['Offered Price'] || '—') +
+    row('Fair Market Price', tx['Fair Market Price'] || '—') +
+    row('Price Deviation', `<span style="font-weight:700;color:${dev.startsWith('-') ? 'var(--red)' : 'var(--green)'}">${dev}</span>`) +
+    row('Fairness Rating', `<span style="color:${pColor};font-weight:600">${pFair}</span>`) +
+    row('Fraud Flag', tx['Fraud Flag'] || '—');
+
+  renderPriceBar(offP, fairP, 0, fairP * 1.5);
+
+  // Buyer — not available in verify response, show placeholders
+  q('#buyer-sub').textContent = `Buyer ${tx['Buyer ID'] || '—'}`;
+  q('#buyer-body').innerHTML = row('Buyer ID', tx['Buyer ID'] || '—') +
+    row('Transaction Flagged', tx['Fraud Flag']?.includes('No fraud') ? '✅ No' : '⚠️ Yes');
+
+  // Fraud
+  q('#fraud-sub').textContent = isOK ? 'No tampering detected' : 'Chain link broken';
+  q('#fraud-body').innerHTML =
+    row('Hash Format Valid', bc['Hash Valid'] || '—') +
+    row('Chain Intact',      bc['Chain Intact'] || '—') +
+    row('Chain Length',      bc['Chain Length'] || '—') +
+    row('Algorithm',         bc['Algorithm'] || 'SHA-256');
+  renderFraudMeter(isOK ? 0 : 80, isOK ? 'CLEAN' : 'HIGH_RISK', 1);
+
+  // Group — hide
+  q('#group-card').style.display = 'none';
+
+  // Blockchain
+  q('#chain-sub').textContent = `Block #${card.block_number}`;
+  q('#chain-body').innerHTML =
+    row('Block Number', `#${card.block_number}`) +
+    row('Hash Algorithm', bc['Algorithm'] || 'SHA-256');
+
+  q('#chain-hash-box').innerHTML = `
+    <div class="hash-box">
+      <div class="hash-icon">🔐</div>
+      <div>
+        <div class="hash-label">SHA-256 BLOCK HASH</div>
+        <div class="hash-value">${tech.hash_details.stored_hash}</div>
+      </div>
+    </div>`;
+
+  // Chain links
+  let linksHtml = '';
+  (card.chain_view || []).forEach(b => {
+    const ok = b.status.includes('VALID');
+    linksHtml += `<div class="chain-link-row">
+      <div class="block-num">${b.block.replace('Block #','')}</div>
+      <div class="chain-link-info">
+        <div class="chain-link-tx">${b.tx_id}</div>
+        <div class="chain-link-hash">${b.hash}</div>
+      </div>
+      <div class="chain-link-status">${ok ? '✅' : '❌'}</div>
+    </div>`;
+  });
+  q('#chain-links').innerHTML = linksHtml;
+
+  q('#tamper-note').style.display = 'flex';
+  q('#tamper-note').innerHTML = `<span>🔒</span><span><strong>Tamper-proof:</strong> ${card.tamper_proof_note}</span>`;
+
+  q('#footer').innerHTML = `Verified at ${fmtDate(v.verified_at)}<br/><strong>BGS Hackathon</strong> · Blockchain-Inspired Agri Trade Intelligence Platform`;
+}
+
+// ── Render Trade (main webhook response) ───────────────────
+function renderTrade(data) {
+  const fc  = data.farmer_card;
+  const pi  = fc.price_info;
+  const bi  = fc.buyer_info;
+  const fs  = fc.fraud_summary;
+  const gn  = fc.group_opportunity;
+  const bc  = data.blockchain_certificate;
+  const f   = data.farmer;
+
+  // Hero
+  const isGood = ['ACCEPT','NEGOTIATE_BEFORE_ACCEPTING'].includes(fc.decision);
+  const ring = q('#status-ring');
+  ring.textContent = fc.decision_emoji;
+  ring.className = `status-ring ${fc.decision === 'ACCEPT' ? 'verified' : fc.decision === 'STRONGLY_REJECT' ? 'tampered' : 'warning'}`;
+
+  const badge = q('#status-badge');
+  badge.textContent = fc.decision.replace(/_/g, ' ');
+  badge.className = `status-badge ${fc.decision === 'ACCEPT' ? 'verified' : fc.decision === 'STRONGLY_REJECT' ? 'tampered' : 'warning'}`;
+
+  q('#status-title').textContent = fc.headline;
+  q('#status-sub').textContent   = fc.price_info.money_impact;
+
+  // Decision banner
+  const dc = decisionColors(fc.decision);
+  q('#decision-banner').style.cssText = `background:${dc.bg};border:1px solid ${dc.border};color:${dc.text}`;
+  q('#decision-banner').innerHTML = `
+    <div class="decision-emoji">${fc.decision_emoji}</div>
+    <div>
+      <div class="decision-title">${fc.decision.replace(/_/g,' ')}</div>
+      <div class="decision-sub">${fc.recommended_action}</div>
+    </div>`;
+
+  // Trade details
+  q('#trade-tx-sub').textContent = data.transaction_id;
+  q('#trade-body').innerHTML =
+    row('Transaction ID', `<span class="mono">${data.transaction_id}</span>`) +
+    row('Farmer', f.name) +
+    row('Farmer ID', f.id) +
+    row('Location', f.location) +
+    row('Crop', `<span style="text-transform:capitalize">${f.crop}</span>`) +
+    row('Date & Time', fmtDate(data.analyzed_at));
+
+  // Price
+  const offP  = parseFloat(pi.offered.replace('₹','').replace('/kg','')) || 0;
+  const fairP = parseFloat(pi.fair_market.replace('₹','').replace('/kg','')) || 0;
+  const pColor = priceStatusColor(pi.status);
+
+  q('#price-sub').textContent = `${pi.offered} offered vs ${pi.fair_market} fair market`;
+  q('#price-body').innerHTML =
+    row('Offered Price', `<strong>${pi.offered}</strong>`) +
+    row('Fair Market Price', pi.fair_market) +
+    row('Deviation', `<span style="color:${parseFloat(pi.deviation)>=0?'var(--green)':'var(--red)'};font-weight:700">${pi.deviation}</span>`) +
+    row('Status', `<span style="color:${pColor};font-weight:600">${pi.status.replace(/_/g,' ')}</span>`) +
+    row('Money Impact', fc.farmer_summary?.money_impact || '—') +
+    row('Data Source', `<span class="mono">${pi.data_source}</span>`);
+
+  renderPriceBar(offP, fairP, fairP * 0.6, fairP * 2);
+
+  // Buyer
+  const bColor = riskColor(bi.risk_level);
+  q('#buyer-sub').textContent = bi.name || 'Unknown';
+  q('#buyer-body').innerHTML =
+    row('Buyer Name', bi.name || 'Unknown') +
+    row('Risk Level', `<span style="color:${bColor};font-weight:600">${bi.risk_level.replace(/_/g,' ')}</span>`) +
+    row('Reputation Score', `<strong>${bi.reputation}/100</strong>`) +
+    row('Blacklisted', bi.is_blacklisted ? '🚫 YES' : '✅ No') +
+    row('Assessment', bi.warning);
+
+  // Fraud
+  const fColor = fs.score >= 60 ? 'var(--red)' : fs.score >= 30 ? 'var(--amber)' : 'var(--green)';
+  q('#fraud-sub').textContent = `Score: ${fs.score}/100 · ${fs.level}`;
+  q('#fraud-body').innerHTML =
+    row('Fraud Score', `<span style="color:${fColor};font-weight:700">${fs.score}/100</span>`) +
+    row('Risk Level', `<span style="color:${fColor};font-weight:600">${fs.level}</span>`) +
+    row('Flags Triggered', fs.flags.length > 0 ? fs.flags.join(', ') : '✅ None') +
+    row('Rules Evaluated', fs.rules_evaluated);
+  renderFraudMeter(fs.score, fs.level, 1);
+
+  // Group
+  q('#group-sub').textContent = gn.available
+    ? `${gn.farmers} matching farmers found · ${gn.power} bargaining power`
+    : 'No group found for this crop';
+  if (gn.available) {
+    let chips = '';
+    // We don't have individual names in farmer_card, use message
+    chips = `<div class="farmer-chips">
+      <div class="farmer-chip"><div class="farmer-chip-dot"></div>${gn.message}</div>
+    </div>`;
+    q('#group-body').innerHTML = chips +
+      `<div class="card-body">` +
+      row('Bargaining Power', `<span style="font-weight:700;color:${gn.power==='STRONG'?'var(--green)':gn.power==='MODERATE'?'var(--amber)':'var(--red)'}">${gn.power}</span>`) +
+      row('Best Market', gn.best_market || 'N/A') +
+      row('Best Day', gn.best_day || 'N/A') +
+      `</div>`;
+  } else {
+    q('#group-body').innerHTML = `<div class="card-body">${row('Status','No group farmers found for this crop')}</div>`;
+  }
+
+  // Actions
+  if (fc.action_plan && fc.action_plan.length > 0) {
+    q('#action-card').style.display = 'block';
+    q('#action-list').innerHTML = fc.action_plan.map((a,i) => `
+      <div class="action-item">
+        <div class="action-num">${i+1}</div>
+        <div>
+          <div class="action-action">${a.action.replace(/_/g,' ')}</div>
+          <div class="action-text">${a.description}${a.saving ? ' · <strong>'+a.saving+'</strong>' : ''}${a.benefit ? ' · <strong>'+a.benefit+'</strong>' : ''}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Blockchain
+  q('#chain-sub').textContent = `Block #${bc.block_number} · ${bc.chain_integrity}`;
+  q('#chain-body').innerHTML =
+    row('Block Number', `#${bc.block_number}`) +
+    row('Chain Integrity', `<span style="color:var(--green);font-weight:600">${bc.chain_integrity}</span>`) +
+    row('Flagged', bc.is_flagged ? '⚠️ Yes' : '✅ No') +
+    row('Previous Hash', `<span class="mono">${bc.previous_hash.substring(0,16)}…</span>`);
+
+  q('#chain-hash-box').innerHTML = `
+    <div class="hash-box">
+      <div class="hash-icon">🔐</div>
+      <div>
+        <div class="hash-label">SHA-256 BLOCK HASH</div>
+        <div class="hash-value">${bc.block_hash}</div>
+      </div>
+    </div>`;
+
+  q('#chain-links').innerHTML = `<div class="chain-link-row">
+    <div class="block-num">${bc.block_number}</div>
+    <div class="chain-link-info">
+      <div class="chain-link-tx">${data.transaction_id}</div>
+      <div class="chain-link-hash">${bc.hash_preview}</div>
+    </div>
+    <div class="chain-link-status">✅</div>
+  </div>`;
+
+  q('#tamper-note').style.display = 'flex';
+  q('#tamper-note').innerHTML = `<span>🔒</span><span>Any modification to this trade record changes the SHA-256 hash, breaking the chain link and triggering a tamper alert on verification.</span>`;
+
+  // Sheets saved
+  const ss = data.sheets_saved;
+  q('#footer').innerHTML = `
+    Analyzed at ${fmtDate(data.analyzed_at)}<br/>
+    Saved to: ${[ss.transaction_log&&'Transaction Log', ss.blockchain_chain&&'Blockchain Chain', ss.fraud_alert&&'Fraud Alerts', ss.group_negotiation&&'Group Negotiation'].filter(Boolean).join(' · ')}<br/>
+    <strong>BGS Hackathon</strong> · Blockchain-Inspired Agri Trade Intelligence Platform`;
+}
+
+// ── Price bar renderer ──────────────────────────────────────
+function renderPriceBar(offered, fair, min, max) {
+  if (!min) min = fair * 0.5;
+  if (!max) max = fair * 1.8;
+  const range = max - min;
+  const fairPct    = ((fair - min) / range) * 100;
+  const offeredPct = Math.min(100, Math.max(0, ((offered - min) / range) * 100));
+  const barColor   = offered >= fair ? 'var(--green)' : offered >= fair * 0.9 ? 'var(--amber)' : 'var(--red)';
+
+  q('#price-visual').innerHTML = `
+    <div style="font-size:11px;color:var(--ink-4);margin-bottom:2px;letter-spacing:0.5px;text-transform:uppercase">Price Range Visualizer</div>
+    <div class="price-bar-wrap">
+      <div class="price-bar-range" style="left:0;width:100%"></div>
+      <div style="position:absolute;top:-4px;left:${fairPct}%;width:2px;height:16px;background:var(--ink-2);border-radius:1px;transform:translateX(-50%)"></div>
+      <div class="price-bar-offered" style="left:${offeredPct}%;background:${barColor}"></div>
+    </div>
+    <div class="price-bar-labels">
+      <span>₹${min.toFixed(1)} min</span>
+      <span>₹${fair.toFixed(1)} fair</span>
+      <span>₹${max.toFixed(1)} max</span>
+    </div>
+    <div class="price-highlights">
+      <div class="ph-item">
+        <div class="ph-label">Offered</div>
+        <div class="ph-value">₹${offered}</div>
+      </div>
+      <div class="ph-item">
+        <div class="ph-label">Fair Market</div>
+        <div class="ph-value">₹${fair}</div>
+      </div>
+      <div class="ph-item">
+        <div class="ph-label">Difference</div>
+        <div class="ph-value ${(offered-fair)>=0?'positive':'negative'}">₹${(offered-fair).toFixed(1)}</div>
+      </div>
+    </div>`;
+}
+
+// ── Fraud meter renderer ────────────────────────────────────
+function renderFraudMeter(score, level, delay) {
+  const color = score >= 60 ? 'var(--red)' : score >= 30 ? 'var(--amber)' : 'var(--green)';
+  const badgeBg = score >= 60 ? '#fef2f2' : score >= 30 ? '#fffbeb' : '#f0fdf4';
+  const badgeBorder = score >= 60 ? '#fecaca' : score >= 30 ? '#fde68a' : '#bbf7d0';
+
+  q('#fraud-meter').innerHTML = `
+    <div style="font-size:11px;color:var(--ink-4);text-transform:uppercase;letter-spacing:0.5px">Fraud Risk Score</div>
+    <div class="fraud-meter-bar">
+      <div class="fraud-meter-fill" id="fraud-fill" style="width:0%;background:${color}"></div>
+    </div>
+    <div class="fraud-labels"><span>0 — Clean</span><span>100 — High Risk</span></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <div class="fraud-level-badge" style="background:${badgeBg};color:${color};border:1px solid ${badgeBorder}">
+        ${score >= 60 ? '🚨' : score >= 30 ? '⚠️' : '✅'} ${level.replace(/_/g,' ')}
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${color}">${score}/100</span>
+    </div>`;
+
+  setTimeout(() => {
+    const fill = document.getElementById('fraud-fill');
+    if (fill) fill.style.width = `${score}%`;
+  }, delay * 200);
+}
+
+function showError(msg) {
+  q('#loading').style.display = 'none';
+  q('#error-state').style.display = 'block';
+  q('#error-msg').textContent = msg;
+}
+
+// ── Boot ───────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>
