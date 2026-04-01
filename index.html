@@ -679,7 +679,11 @@ async function load() {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    data = await res.json();
+    const raw = await res.json();
+    // n8n sometimes double-serializes: response is a JSON string, not object
+    data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    // Also handle if n8n wraps in array
+    if (Array.isArray(data)) data = data[0];
   } catch (e) {
     showError(`Could not reach verification server: ${e.message}`);
     return;
@@ -695,16 +699,135 @@ function render(data) {
   q('#content').style.display = 'block';
 
   // ── Determine if this is a verify response or trade response ──
-  const isVerify = 'verified' in data && 'display_card' in data;
-  const isTrade  = data.success && data.farmer_card;
+  // n8n actual shape: { verification: { overall_status, transaction, hash_details, ... }, ... }
+  const isVerifyActual = data.verification && data.verification.overall_status;
+  // Legacy shape (display_card format)
+  const isVerifyLegacy = 'verified' in data && 'display_card' in data;
+  // Trade response shape
+  const isTrade = data.success && data.farmer_card;
 
-  if (isVerify) {
+  if (isVerifyActual) {
+    renderVerificationActual(data.verification);
+  } else if (isVerifyLegacy) {
     renderVerification(data);
   } else if (isTrade) {
     renderTrade(data);
   } else {
     showError('Unexpected data format from server.');
   }
+}
+
+// ── Render Verification — actual n8n response shape ─────────
+function renderVerificationActual(v) {
+  const tx  = v.transaction;
+  const hd  = v.hash_details;
+  const isOK = v.overall_status === 'VERIFIED';
+
+  // Hero
+  const ring = q('#status-ring');
+  ring.textContent = v.status_emoji;
+  ring.className = `status-ring ${isOK ? 'verified' : 'tampered'}`;
+
+  const badge = q('#status-badge');
+  badge.textContent = v.overall_status.replace(/_/g, ' ');
+  badge.className = `status-badge ${isOK ? 'verified' : 'tampered'}`;
+
+  q('#status-title').textContent = isOK
+    ? 'This trade is verified & tamper-proof'
+    : 'Chain integrity warning detected';
+  q('#status-sub').textContent = v.status_message;
+
+  // Decision banner
+  const isFair = ['FAIR_PRICE','ABOVE_FAIR','PREMIUM_PRICE'].includes(tx.price_fairness);
+  const dc = decisionColors(isOK && isFair ? 'ACCEPT' : isOK ? 'NEGOTIATE_BEFORE_ACCEPTING' : 'STRONGLY_REJECT');
+  q('#decision-banner').style.cssText = `background:${dc.bg};border:1px solid ${dc.border};color:${dc.text}`;
+  q('#decision-banner').innerHTML = `
+    <div class="decision-emoji">${isOK ? '🔒' : '🔓'}</div>
+    <div>
+      <div class="decision-title">${isOK ? 'Blockchain Verified' : 'Integrity Warning'}</div>
+      <div class="decision-sub">Block #${tx.block_number} · ${fmtDate(tx.timestamp)}</div>
+    </div>`;
+
+  // Trade details
+  q('#trade-tx-sub').textContent = tx.id;
+  q('#trade-body').innerHTML =
+    row('Transaction ID', `<span class="mono">${tx.id}</span>`) +
+    row('Farmer ID',  tx.farmer_id  || '—') +
+    row('Buyer ID',   tx.buyer_id   || '—') +
+    row('Crop', `<span style="text-transform:capitalize">${tx.crop || '—'}</span>`) +
+    row('Date & Time', fmtDate(tx.timestamp));
+
+  // Price
+  const offP  = parseFloat((tx.offered_price||'').replace('₹','').replace('/kg','')) || 0;
+  const fairP = parseFloat((tx.fair_price||'').replace('₹','').replace('/kg','')) || 0;
+  const devPct = fairP ? (((offP - fairP) / fairP) * 100).toFixed(1) : '—';
+  const devStr = tx.price_deviation || (devPct !== '—' ? `${devPct > 0 ? '+' : ''}${devPct}%` : '—');
+  const pColor = priceStatusColor(tx.price_fairness);
+
+  q('#price-sub').textContent = `Offered ${tx.offered_price} vs Fair ${tx.fair_price}`;
+  q('#price-body').innerHTML =
+    row('Offered Price', `<strong>${tx.offered_price}</strong>`) +
+    row('Fair Market Price', tx.fair_price) +
+    row('Price Deviation', `<span style="font-weight:700;color:${devStr.startsWith('-') ? 'var(--red)' : 'var(--green)'}">${devStr}</span>`) +
+    row('Fairness Rating', `<span style="color:${pColor};font-weight:600">${(tx.price_fairness||'').replace(/_/g,' ')} ${tx.fairness_emoji||''}</span>`) +
+    row('Fraud Flag', tx.flag_note || '—');
+  renderPriceBar(offP, fairP, fairP * 0.5, fairP * 1.6);
+
+  // Buyer — only ID available in verify response
+  q('#buyer-sub').textContent = `Buyer ${tx.buyer_id || '—'}`;
+  q('#buyer-body').innerHTML =
+    row('Buyer ID', tx.buyer_id || '—') +
+    row('Transaction Flagged', tx.is_flagged ? '⚠️ Yes' : '✅ No') +
+    row('Flag Note', tx.flag_note || '—');
+
+  // Fraud / integrity
+  q('#fraud-sub').textContent = isOK ? 'No tampering detected' : 'Chain link broken';
+  q('#fraud-body').innerHTML =
+    row('Hash Format Valid', v.hash_valid ? '✅ Yes' : '❌ No') +
+    row('Chain Intact', v.chain_intact ? '✅ All links valid' : '❌ Chain broken') +
+    row('Total Blocks', v.chain_length) +
+    row('Algorithm', hd.hash_algorithm || 'SHA-256');
+  renderFraudMeter(isOK ? 0 : 80, isOK ? 'CLEAN' : 'HIGH_RISK', 1);
+
+  // Group — hide (not in verify response)
+  q('#group-card').style.display = 'none';
+
+  // Blockchain
+  q('#chain-sub').textContent = `Block #${tx.block_number} · ${v.overall_status}`;
+  q('#chain-body').innerHTML =
+    row('Block Number', `#${tx.block_number}`) +
+    row('Chain Integrity', `<span style="color:${isOK?'var(--green)':'var(--red)'};font-weight:600">${isOK ? '✅ VALID' : '❌ BROKEN'}</span>`) +
+    row('Flagged', tx.is_flagged ? '⚠️ Yes' : '✅ No') +
+    row('Algorithm', hd.hash_algorithm || 'SHA-256');
+
+  q('#chain-hash-box').innerHTML = `
+    <div class="hash-box">
+      <div class="hash-icon">🔐</div>
+      <div>
+        <div class="hash-label">SHA-256 BLOCK HASH</div>
+        <div class="hash-value">${hd.stored_hash}</div>
+      </div>
+    </div>`;
+
+  // Chain history links
+  let linksHtml = '';
+  (v.chain_history || []).forEach(b => {
+    const ok = b.status && (b.status.includes('VALID') || b.status === '✅');
+    linksHtml += `<div class="chain-link-row">
+      <div class="block-num">${b.block}</div>
+      <div class="chain-link-info">
+        <div class="chain-link-tx">${b.tx_id}</div>
+        <div class="chain-link-hash">${b.hash}</div>
+      </div>
+      <div class="chain-link-status">${ok ? '✅' : '❌'}</div>
+    </div>`;
+  });
+  q('#chain-links').innerHTML = linksHtml;
+
+  q('#tamper-note').style.display = 'flex';
+  q('#tamper-note').innerHTML = `<span>🔒</span><span><strong>Tamper-proof:</strong> ${v.tamper_demo?.description || 'Any modification to this trade record changes the SHA-256 hash, breaking the chain link and triggering a tamper alert.'}</span>`;
+
+  q('#footer').innerHTML = `Verified at ${fmtDate(v.verified_at)}<br/><strong>BGS Hackathon</strong> · Blockchain-Inspired Agri Trade Intelligence Platform`;
 }
 
 // ── Render Verification (QR scan result) ───────────────────
