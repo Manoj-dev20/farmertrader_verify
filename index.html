@@ -698,22 +698,31 @@ function render(data) {
   q('#loading').style.display = 'none';
   q('#content').style.display = 'block';
 
-  // ── Determine if this is a verify response or trade response ──
-  // n8n actual shape: { verification: { overall_status, transaction, hash_details, ... }, ... }
+  // Always log so we can inspect in browser console
+  console.log('n8n response received:', JSON.stringify(data, null, 2));
+
+  // Shape A: n8n Hash Verifier returns { verification: { overall_status, transaction, ... }, ... }
   const isVerifyActual = data.verification && data.verification.overall_status;
-  // Legacy shape (display_card format)
+  // Shape B: legacy { verified, display_card }
   const isVerifyLegacy = 'verified' in data && 'display_card' in data;
-  // Trade response shape
+  // Shape C: n8n sent { html_page, verified } — builder is in HTML mode, not JSON mode
+  const isHtmlMode = data.html_page !== undefined && 'verified' in data;
+  // Shape D: trade submit response { success, farmer_card }
   const isTrade = data.success && data.farmer_card;
 
   if (isVerifyActual) {
     renderVerificationActual(data.verification);
   } else if (isVerifyLegacy) {
     renderVerification(data);
+  } else if (isHtmlMode) {
+    // n8n "Verification Response Builder" is returning HTML instead of JSON data.
+    // Fix: replace the last line of that node with the JSON return below.
+    showError('⚠️ n8n is returning HTML instead of JSON data. Fix the "Verification Response Builder" node in n8n — see the instructions provided.');
   } else if (isTrade) {
     renderTrade(data);
   } else {
-    showError('Unexpected data format from server.');
+    console.error('Keys in response:', Object.keys(data));
+    showError('Unexpected data from server. Open browser console (F12) and check the "n8n response received" log to see what was returned.');
   }
 }
 
